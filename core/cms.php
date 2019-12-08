@@ -15,16 +15,6 @@ if (Config::$debug) {
 
 
 
-// core includes
-// autoload now
-/* include_once ('s.php');
-include_once ('user.php');
-include_once ('messages.php');
-include_once ('controller.php'); */
-
-
-
-
 final class CMS {
 	public $domain;
 	public $pdo;
@@ -76,16 +66,28 @@ final class CMS {
 		}
 		else {
 			//echo "<code>Var " . $val . " not found</code>";
-			return false;
+			return NULL;
 		}
 		if ($filter=="RAW") {
 			return $foo;
 		}
-		elseif ($filter=="USERNAME") {
+		elseif ($filter=="USERNAME"||$filter=="TEXT") {
 			return filter_var($foo, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
 		}
 		elseif ($filter=="EMAIL") {
 			return filter_var($foo, FILTER_VALIDATE_EMAIL);
+		}
+		elseif ($filter=="ARRAYTOJSON") {
+			if (!is_array($foo)) {
+				CMS::Instance()->queue_message('Cannot convert non-array to json in ARRAYTOJSON','danger',Config::$uripath . '/admin/pages');
+				//echo "<h5>Variable is not array, cannot perform ARRAYTOJSON filter</h5>";
+				return false;
+			}
+			$json = json_encode($foo);
+			return $json;
+		}
+		elseif ($filter=="NUM"||$filter=="NUMBER"||$filter=="NUMERIC") {
+			return filter_var($foo, FILTER_SANITIZE_NUMBER_INT);
 		}
 		else {
 			return $foo;
@@ -187,6 +189,8 @@ final class CMS {
 		$this->pprint_r($this->user);
 		echo "<p>Segments:</p>";
 		$this->pprint_r($this->uri_segments);
+		echo "<p>Page:</p>";
+		$this->pprint_r($this->page);
 		echo "</div>";
 		echo "<p>DB:</p>";
 		$this->pprint_r($this->pdo);
@@ -233,7 +237,19 @@ final class CMS {
 		}
 		else {
 			// front end controllers
-			return false;
+			// first determine page
+			// look for deepest matching alias - once found, that page is our controller
+			// if final matching alias is empty, show home
+			// FOR NOW JUST DO HOME PAGE
+			CMS::Instance()->page = new Page();
+			CMS::Instance()->page->load_from_alias('home');
+			if (CMS::Instance()->page->controller) {
+				// do controller things
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 	}
 
@@ -291,7 +307,7 @@ final class CMS {
 			//$this->showinfo();
 		}
 		else {
-			$template = "hbcms";
+			$template = "basic";
 			if (ADMINPATH) {
 				$template = "clean";
 			}
@@ -301,14 +317,28 @@ final class CMS {
 	}
 }
 
+// CLASS AUTOLOADER
+
 spl_autoload_register(function($class_name) 
 {
 	if ($class_name=="CMS") {
 		echo "<h1>wtf - cms class should not be required before its loaded itself below!</h1>";
+		exit (0);
 		//return false;
 	}
-	// todo: extend to namespaces
-	$path = CMSPATH . "/core/" . strtolower($class_name) . ".php";
+
+	// get path to class file
+	$is_field_class = strpos($class_name, "Field_");
+	if ($is_field_class === false) {
+		// not field, assume regular core class
+		$path = CMSPATH . "/core/" . strtolower($class_name) . ".php";
+	}
+	else {
+		$path = CMSPATH . "/core/fields/" . $class_name . ".php";
+	}
+	
+
+	
 	//echo "<h1>autoload path: " . $path . "</h1>";
     require_once $path;
 });

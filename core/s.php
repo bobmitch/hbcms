@@ -23,12 +23,14 @@ class s
     
 
     public static function read($key, $child = false){
-        self::_init();
+		self::_init();
+		self::_age(); // moved age to prevent key issue after session 'timeout'
         if (isset($_SESSION[$key]))
         {
-            self::_age();
+            //self::_age();
             if (false == $child)
             {
+				
                 return $_SESSION[$key];
             }
             else

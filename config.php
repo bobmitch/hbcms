@@ -8,7 +8,7 @@
 		static $dbchar = 'utf8mb4';
 		static $domain = 'auto'; // can be forced for whatever reason, otherwise leave
 		static $uripath = '/newcms'; // if site is in sub-folder from www-root add here
-		static $template = 'hbcms';
+		static $template = 'basic';
 		static $sitename = "HB CMS Test";
 		static $debug = false;
 	}

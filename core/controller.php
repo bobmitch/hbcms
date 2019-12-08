@@ -16,13 +16,13 @@ class Controller {
 		$view_path = $this->path . "/views/" . $this->view;
 		if (file_exists ($view_path)) {
 			if (is_dir($view_path)) {
-				// TODO: check for included files existin too
+				// TODO: check for included files existing too
 				include_once ($view_path . "/model.php");
 				include_once ($view_path . "/view.php");
 			}
 		}
 		else {
-			CMS::Instance()->show_error ("Failed to load view {$this->view} for controller at " . $this->path, 'error');
+			CMS::Instance()->show_error ("View folder {$this->view} doesn't exist for controller at " . $this->path, 'error');
 		}
 	}
 }

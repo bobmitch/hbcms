@@ -4,36 +4,34 @@ defined('CMSPATH') or die; // prevent unauthorized access
 
 class Page {
 	public $id;
+	public $state;
 	public $title;
 	public $alias;
+	public $template;
 	public $parent;
-	public $controller;
+	public $content_type;
+	public $view;
 	public $updated;
+	public $view_configuration;
 
 
 
 	public function __construct() {
-		$this->id = false;
+		$this->id = null;
+		$this->state = 1;
 		$this->title = "";
 		$this->alias = "";
+		$this->template = 1;
 		$this->parent = false;
-		$this->created = date('Y-m-d H:i:s');
-		$this->controller = false;
-		$this->id = false;
+		$this->updated = date('Y-m-d H:i:s');
+		$this->content_type = null;
+		$this->view = null;
+		$this->view_configuration = false;
 	}
 
-	public function create_new ($username, $password, $email, $groups=[], $state=0) {
-		if ($username && $email && $password) {
-			$hash = password_hash ($password, PASSWORD_DEFAULT);
-			$query = "INSERT INTO users (username, email, password, state) VALUES (?,?,?,?)";
-			CMS::Instance()->$pdo->prepare($query)->execute([$username,$email,$hash,$state]);
-		}
-		else {
-			// TODO:throw
-		}
-	}
+	
 	// $pdo->prepare($sql)->execute([$name, $id]);
-	public function get_all_pages() {
+	public static function get_all_pages() {
 		//echo "<p>Getting all users...</p>";
 		//$db = new db();
 		//$db = CMS::$pdo;
@@ -42,33 +40,59 @@ class Page {
 		return $result;
 	}
 
-	public function load_from_post() {
-		$this->username = CMS::getvar('username','USERNAME');
-		$this->password = password_hash ($_POST['password'], PASSWORD_DEFAULT); 
-		$this->email = CMS::getvar('email','EMAIL');
-		if (!$this->email) {
-			CMS::queue_message('Invalid email','warning');
-			return false;
+	public static function get_all_pages_by_depth($parent=-1, $depth=-1) {
+		$depth = $depth+1;
+		$result=array();
+		$stmt = CMS::Instance()->pdo->prepare("select * from pages where parent=?");
+		$stmt->execute(array($parent));
+		$children = $stmt->fetchAll();
+		foreach ($children as $child) {
+			$child->depth = $depth;
+			$result[] = $child;
+			$result = array_merge ($result, Page::get_all_pages_by_depth($child->id, $depth));
 		}
-		$this->registered = date('Y-m-d H:i:s');
-		$this->id = false;
+		return $result;
+	}
+
+
+	public function load_from_post() {
+		$this->title = CMS::getvar('title','TEXT');
+		$this->state = CMS::getvar('state','NUM');
+		if (!$this->state) {
+			$this->state = 1;
+		}
+		$this->template = CMS::getvar('template','NUM');
+		$this->alias = CMS::getvar('alias','TEXT');
+		if (!$this->alias) {
+			$this->alias = CMS::stringURLSafe($this->title);
+		}
+		$this->parent = CMS::getvar('parent','NUM');
+		$this->content_type = CMS::getvar('content_type','NUM');
+		$this->view = CMS::getvar('content_type_controller_view','NUM');
+		$this->view_configuration = CMS::getvar('view_options','ARRAYTOJSON');
+		
+		$this->id = CMS::getvar('id','NUM');
+
 		return true;
-		// todo: get groups too!
 	}
 
 	public function load_from_id($id) {
-		$query = "select * from users where id=?";
-		$db = new db();
-		$stmt = $db->pdo->prepare($query);
+		$query = "select * from pages where id=?";
+		//$db = new db();
+		$stmt = CMS::Instance()->pdo->prepare($query);
 		$stmt->execute(array($id));
 		$result = $stmt->fetch();
 		if ($result) {
-			$this->username = $result->username;
-			$this->password = $result->password;
-			$this->created = $result->created;
-			$this->groups = false; // TODO: get groups
-			$this->email = $result->email;
 			$this->id = $result->id;
+			$this->state = $result->state;
+			$this->title = $result->title;
+			$this->alias = $result->alias;
+			$this->template = $result->template;
+			$this->parent = $result->parent;
+			$this->updated = $result->updated;
+			$this->content_type = $result->content_type;
+			$this->view = $result->content_view;
+			$this->view_configuration = $result->content_view_configuration;
 			return true;
 		}
 		else {
@@ -76,41 +100,48 @@ class Page {
 		}
 	}
 
-	public function check_password($password) {
-		$query = "select password from users where id=?";
-		$db = new db();
-		$stmt = $db->pdo->prepare($query);
-		$stmt->execute(array($this->id));
-		$hash = $stmt->fetch();
-		return password_verify($password, $hash->password);
-	}
 
-	public function load_from_username($username) {
-		echo "<h5>Loading user object from db with username {$username}</h5>";
-		$query = "select * from users where username=?";
-		$db = new db();
-		$stmt = $db->pdo->prepare($query);
-		$stmt->execute(array($username));
+	public function load_from_alias($alias) {
+		$query = "select * from pages where alias=?";
+		//$db = new db();
+		$stmt = CMS::Instance()->pdo->prepare($query);
+		$stmt->execute(array($alias));
 		$result = $stmt->fetch();
 		if ($result) {
-			$this->username = $result->username;
-			$this->password = $result->password;
-			$this->created = $result->created;
-			$this->groups = false; // TODO: get groups
-			$this->email = $result->email;
 			$this->id = $result->id;
+			$this->state = $result->state;
+			$this->title = $result->title;
+			$this->alias = $result->alias;
+			$this->template = $result->template;
+			$this->parent = $result->parent;
+			$this->updated = $result->updated;
+			$this->content_type = $result->content_type;
+			$this->view = $result->content_view;
+			$this->view_configuration = $result->content_view_configuration;
 			return true;
 		}
 		else {
 			return false;
 		}
 	}
+
+
 
 	public function save() {
 		if ($this->id) {
 			// update
-			$query = "update users set username=?, password=?, email=? where id=?";
-			$result = CMS::Instance()->pdo->prepare($query)->execute(array($this->username, $this->password, $this->email, $this->id));
+			$query = "update pages set state=?, title=?, alias=?, content_type=?, content_view=?, parent=?, template=?, content_view_configuration=? where id=?";
+			$result = CMS::Instance()->pdo->prepare($query)->execute(array(
+				$this->state, 
+				$this->title, 
+				$this->alias, 
+				$this->content_type,
+				is_numeric($this->view) ? $this->view : NULL,
+				$this->parent,
+				$this->template,
+				$this->view_configuration,
+				$this->id
+			));
 			if ($result) {
 				// saved ok
 				return true;
@@ -125,23 +156,35 @@ class Page {
 		}
 		else {
 			// insert new
-			$query = "insert into users (username,email,password) values(?,?,?)";
+			$query = "insert into pages (state, title, alias, content_type, content_view, parent, template, content_view_configuration) values(?,?,?,?,?,?,?,?)";
 			try {
-				$result = CMS::Instance()->pdo->prepare($query)->execute(array($this->username, $this->email, $this->password));	
+				$stmt = CMS::Instance()->pdo->prepare($query);
+				$result = $stmt->execute(array(
+					$this->state, 
+					$this->title, 
+					$this->alias, 
+					$this->content_type,
+					is_numeric($this->view) ? $this->view : NULL,
+					$this->parent,
+					$this->template,
+					$this->view_configuration
+				));	
 			}
 			catch (PDOException $e) {
-				CMS::Instance()->queue_message('Username and/or email already exists','danger',Config::$uripath.'/admin/users/new');
+				//CMS::Instance()->queue_message('Error saving page','danger',Config::$uripath.'/admin/pages/');
 				if (Config::$debug) {
-					echo "<code>" . $e->getMessage() . "</code>";
+					CMS::Instance()->queue_message('Error saving page: ' . $e->getMessage(),'danger',Config::$uripath.'/admin/pages/');
+					//echo "<code>" . $e->getMessage() . "</code>";
 				}
 				$result = false;
+				exit(0);
 			}
 			if ($result) {
 				return true;
 			}
 			else {
 				// todo - check for username/email already existing and clarify
-				CMS::Instance()->queue_message('Unable to create user','danger',Config::$uripath.'/admin/users');
+				CMS::Instance()->queue_message('Unable to create page.' . $query ,'danger',Config::$uripath.'/admin/pages');
 				return false;
 			}
 		}

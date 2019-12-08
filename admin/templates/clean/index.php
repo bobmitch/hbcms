@@ -34,6 +34,7 @@ require_once (CMSPATH . "/core/cms.php");
 					<div class="navbar-start">
 						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/">Home</a>
 
+						<?php if (CMS::Instance()->user->is_member_of('admin')):?>
 						<div class="navbar-item has-dropdown is-hoverable">
 							<a class="navbar-link">Users</a>
 							<div class="navbar-dropdown">
@@ -41,13 +42,22 @@ require_once (CMSPATH . "/core/cms.php");
 								<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/users/options">User Options</a>
 							</div>
 						</div>
+						<?php endif; ?>
 
 						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/pages/">Pages</a>
-						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/">Content</a>
-						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/">Controllers</a>
-						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/">Widgets</a>
-						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/">Tags</a>
-						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/">Media</a>
+						
+						<div class="navbar-item has-dropdown is-hoverable">
+							<a class="navbar-link">Content</a>
+							<div class="navbar-dropdown">
+								<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/content/all">All Content</a>
+								<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/content/types">Content Types</a>
+							</div>
+						</div>
+
+						<!--<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/controllers/all">Controllers</a>-->
+						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/widgets">Widgets</a>
+						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/tags">Tags</a>
+						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/media">Media</a>
 
 					
 					</div>

@@ -32,11 +32,24 @@ class User {
 	// $pdo->prepare($sql)->execute([$name, $id]);
 	public function get_all_users() {
 		//echo "<p>Getting all users...</p>";
-		$db = new db();
+		//$db = new db();
 		//$db = CMS::$pdo;
 		//$result = $db->pdo->query("select * from users")->fetchAll();
 		$result = CMS::Instance()->pdo->query("select * from users")->fetchAll();
 		return $result;
+	}
+
+	public function is_member_of ($group_value) {
+		$query = "select id from groups where value=? and id in (select group_id from user_groups where user_id=?)";
+		$stmt = CMS::Instance()->pdo->prepare($query);
+		$stmt->execute(array($group_value, $this->id));
+		$result = $stmt->fetch();
+		if ($result) {
+			if ($result->id) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public function load_from_post() {
@@ -71,6 +84,14 @@ class User {
 		else {
 			return false;
 		}
+	}
+
+	
+	public static function get_username_by_id($id) {
+		$stmt = CMS::Instance()->pdo->prepare("select username from users where id=?");
+		$stmt->execute(array($id));
+		$result = $stmt->fetch()->username;
+		return $result;
 	}
 
 	public function check_password($password) {
@@ -150,34 +171,9 @@ class User {
 		return $result;
 	}
 
-	public function has_access($a,$b) {
-		// function returns true if $a has access to $b
-		$levels = unserialize(USERLEVELS);
-		return ($levels[$a]>=$levels[$b]);
-	}
 
-	public function is_admin() {
-		if ($this->level=='admin') {
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
 
-	public function is_editor() {
-		if ($this->has_access($this->level,'editor')) {
-			return true;
-		}
-	}
 
-	public function set_level($level) {
-		$this->level = $level;
-	}
-
-	public function get_level() {
-		return $this->level;
-	}
 
 
 }

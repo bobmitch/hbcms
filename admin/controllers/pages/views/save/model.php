@@ -3,18 +3,23 @@ defined('CMSPATH') or die; // prevent unauthorized access
 
 // any variables created here will be available to the view
 
-$user = new User();
-//$all_groups = $user->get_all_groups();
-//$all_users = $user->get_all_users();
+$page = new Page();
 
-$success=$user->load_from_post();
+$success=$page->load_from_post();
+
 if (!$success) {
-	CMS::Instance()->queue_message('Failed to create user object from form data','danger',Config::$uripath.'/admin/users');
+	CMS::Instance()->queue_message('Failed to create page object from form data','danger',Config::$uripath.'/admin/pages');
 }
-$success = $user->save();
+
+/* CMS::pprint_r ($page);
+CMS::pprint_r ($page->view_configuration);
+exit(0); */
+
+$success = $page->save();
+
 if ($success) {
-	CMS::Instance()->queue_message('User created/updated','success',Config::$uripath.'/admin/users');
+	CMS::Instance()->queue_message('Page created/updated','success',Config::$uripath.'/admin/pages');
 }
 else {
-	CMS::Instance()->queue_message('User creation/update failed','danger',Config::$uripath.'/admin/users');
+	CMS::Instance()->queue_message('Page creation/update failed','danger',Config::$uripath.'/admin/pages');
 }
