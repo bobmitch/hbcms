@@ -1,29 +1,44 @@
 <?php
 defined('CMSPATH') or die; // prevent unauthorized access
 
-class Field_Text extends Field {
+class Field_Select extends Field {
+
+	public $select_options;
+
+	function __construct($id="") {
+		$this->id = $id;
+		$this->name = $id;
+		$this->select_options=[];
+	}
 
 	public function display() {
-		echo "<div class='field'>";
-			echo "<label class='label'>{$this->label}</label>";
-			echo "<div class='control'>";
-				$required="";
-				if ($this->required) {$required=" required ";}
-				echo "<input value='{$this->default}' maxlength={$this->maxlength} minlength={$this->minlength} class='filter_{$this->filter} input' {$required} type='text' id='{$this->id}' name='{$this->name}'>";
-			echo "</div>";
-			if ($this->description) {
-				echo "<p class='help'>" . $this->description . "</p>";
-			}
+		$required="";
+		if ($this->required) {$required=" required ";}
+		echo "<div class='select'>";
+			echo "<select {$required} id='{$this->id}' name='{$this->name}'>";
+				if ($this->required) {
+					echo "<option value='' >{$this->label}</option>";
+				}
+				foreach ($this->select_options as $select_option) {
+					$selected = "";
+					if ($select_option->value == $this->default) { $selected="selected";}
+					echo "<option {$selected} value='{$select_option->value}'>{$select_option->text}</option>";
+				}
+			echo "</select>";
+			
 		echo "</div>";
+		if ($this->description) {
+			echo "<p class='help'>" . $this->description . "</p>";
+		}
 	}
 
 
 	public function inject_designer_javascript() {
 		?>
 		<script>
-			window.Field_Text = {};
+			window.Field_Select = {};
 			// template is what gets injected when the field 'insert new' button gets clicked
-			window.Field_Text.designer_template = `
+			window.Field_Select.designer_template = `
 			<div class="field">
 				<h2 class='heading title'>Text Field</h2>	
 
@@ -51,14 +66,13 @@ class Field_Text extends Field {
 		$this->label = $config->label ?? '';
 		$this->required = $config->required ?? false;
 		$this->description = $config->description ?? '';
-		$this->maxlength = $config->maxlength ?? 999;
-		$this->filter = $config->filter ?? 'RAW';
-		$this->minlength = $config->minlength ?? 0;
+		$this->filter = $config->filter ?? 'NUMBER';
 		$this->missingconfig = $config->missingconfig ?? false;
+		$this->select_options = $config->select_options ?? [];
+		$this->default = $config->default ?? '';
 	}
 
 	public function validate() {
-		// TODO: enhance validation
 		if ($this->is_missing()) {
 			return false;
 		}

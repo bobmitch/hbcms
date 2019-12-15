@@ -14,15 +14,19 @@ defined('CMSPATH') or die; // prevent unauthorized access
 #all_pages_table {
 	width:100%;
 }
+
+.state1 {
+	color:rgba(50,200,50,0.5);
+}
+
+
 </style>
 
-<?php
-$all_pages = Page::get_all_pages_by_depth(); // defaults to parent=-1 and depth=-1
-?>
+
 
 <h1 class='title is-1'>
 	All Pages
-	<a href='<?php echo Config::$uripath . "/admin/pages/edit"?>' class="button is-primary pull-right">
+	<a href='<?php echo Config::$uripath . "/admin/pages/edit/0"?>' class="button is-primary pull-right">
 		<span class="icon is-small">
       		<i class="fas fa-check"></i>
     	</span>
@@ -45,7 +49,13 @@ $all_pages = Page::get_all_pages_by_depth(); // defaults to parent=-1 and depth=
 		<?php foreach($all_pages as $page):?>
 		<tr>
 			<td>
-				<?php echo $page->state; ?>
+				<?php 
+				// TODO: implement proper publish/unpublish switching
+				// ajax vs standalone form? form easier...
+				//echo $page->state; 
+				?>
+				<i class="state1 fas fa-check-square"></i>
+				
 			</td>
 			<td>
 				<?php
@@ -53,7 +63,7 @@ $all_pages = Page::get_all_pages_by_depth(); // defaults to parent=-1 and depth=
 					echo "<span class='child_indicator'>-&nbsp;</span>";
 				}
 				?>
-				<a href='<?php echo Config::$uripath . "/admin/pages/edit/" . $page->id;?>'><?php echo $page->title; ?></a>
+				<a href='<?php echo Config::$uripath . "/admin/pages/edit/" . $page->id . "/" . $page->content_view;?>'><?php echo $page->title; ?></a>
 				<br>
 				<?php 
 				if ($page->content_type > 0) {
@@ -63,9 +73,6 @@ $all_pages = Page::get_all_pages_by_depth(); // defaults to parent=-1 and depth=
 					//echo "<br><p>TODO: get options nice</p>";
 					$component_path = Content::get_content_location($page->content_type);
 					$component_view = Content::get_view_location($page->content_view);
-					if (Config::$debug) {
-						echo "<p>Debug - Content loc: {$component_path} View loc: {$component_view}</p>";
-					}
 					// TODO - maybe make this an option to view content info on pages overview? it works!
 					/* $view_options = new View_Options($component_path, $component_view, $page->content_view_configuration);
 					$content_info = $view_options->get_content_info();

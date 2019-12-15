@@ -60,6 +60,13 @@ class Content {
 		return $result->location;
 	}
 
+	public static function get_content_type_for_view ($view_id) {
+		$stmt = CMS::Instance()->pdo->prepare("select content_type_id from content_views where id=?");
+		$stmt->execute(array($view_id));
+		$result = $stmt->fetch();
+		return $result->content_type_id;
+	}
+
 	public static function get_view_title($view_id) {
 		if (!$view_id) {
 			return false;

@@ -6,6 +6,10 @@ class Field {
 	public $id;
 	public $title;
 	public $name; // unique id for form submit
+	public $required;
+	public $valid;
+	public $default;
+	public $filter;
 
 	public function display() {
 		echo "<label class='label'>Field Label</label>";
@@ -15,5 +19,33 @@ class Field {
 	public function designer_display() {
 		echo "<label class='label'>Field Label</label>";
 		echo "<p>Hello, I am a field!</p>";
+	}
+
+	public function validate() {
+		return true;
+	}
+
+	public function is_missing() {
+		$value = CMS::getvar($this->name);
+		if (!$value && $this->required) {
+			return true;
+		}
+		return false;
+	}
+
+	public function set_from_submit() {
+		$value = CMS::getvar($this->name, $this->filter);
+		if ($value||is_numeric($value)) {
+			$this->default = $value;
+		}
+	}
+
+	public function set_value($value) {
+		return true;
+	}
+
+	public function load_from_config($config) {
+		// config is json field already converted to object by form class
+		return true;
 	}
 }

@@ -55,7 +55,15 @@ require_once (CMSPATH . "/core/cms.php");
 						</div>
 
 						<!--<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/controllers/all">Controllers</a>-->
-						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/widgets">Widgets</a>
+						<div class="navbar-item has-dropdown is-hoverable">
+							<a class="navbar-link">Widgets</a>
+							<div class="navbar-dropdown">
+								<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/widgets/show/">All Widgets</a>
+								<?php foreach (Widget::get_all_widget_types() as $widget_type):?>
+								<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/widgets/show/<?php echo $widget_type->id; ?>"><?php echo $widget_type->title; ?></a>
+								<?php endforeach; ?>
+							</div>
+						</div>
 						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/tags">Tags</a>
 						<a class="navbar-item" href="<?php echo Config::$uripath;?>/admin/media">Media</a>
 
@@ -113,10 +121,6 @@ require_once (CMSPATH . "/core/cms.php");
        
       </div>
     </div>
-
-  
-  <!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 </body>
 </html>

@@ -9,10 +9,64 @@ defined('CMSPATH') or die; // prevent unauthorized access
 	border:2px solid rgba(0,0,0,0.2);
 }
 #content_type_wrap {
+	margin:0rem;
+	padding:0rem;
+	border:1px dashed rgba(0,0,0,0.0);
+	max-height:0;
+	overflow: hidden;
+	transition:all 1s ease;
+	opacity:0;
+	display: flex;
+    /* justify-content: space-around; */
+}
+#content_type_controller_views {
+	padding-right:1rem;
+	margin-right:1rem;
+	border-right:1px dashed rgba(0,0,0,0.2);
+}
+#content_type_wrap.active {
 	margin:1rem;
 	padding:1rem;
 	border:1px dashed rgba(0,0,0,0.2);
+	max-height:100vh;
+	opacity:1;
 }
+
+.fields-horizontal {
+	display:flex;
+}
+.fields-horizontal > * {
+	padding-left:1em;
+	flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+}
+.fields-horizontal > *:first-child {
+	padding-left:0;
+}
+.lighter_note {
+	font-size:80%;
+	opacity:0.6;
+	padding-left:1rem;
+}
+
+/* #content_type_controller_views {
+	margin:0rem;
+	padding:0rem;
+	border:1px dashed rgba(0,0,0,0.0);
+	max-height:0;
+	overflow: hidden;
+	transition:all 1s ease;
+	opacity:0;
+}
+#content_type_controller_views.active {
+	margin:1rem;
+	padding:1rem;
+	border:1px dashed rgba(0,0,0,0.2);
+	max-height:100vh;
+	opacity:1;
+} */
+
 </style>
 
 <?php
@@ -26,8 +80,9 @@ defined('CMSPATH') or die; // prevent unauthorized access
 	New Page 
 	<?php endif; ?>
 </h1>
-<form method="POST" onSubmit="return validate_view_options();" action="<?php echo Config::$uripath . "/admin/pages/save";?>" id="new_user_form">
+<form method="POST" onSubmit="return validate_view_options();" action="<?php echo Config::$uripath . "/admin/pages/save";?>" id="page_form">
 		<input name="id" type="hidden" value="<?php echo $page->id;?>"/>
+<div class='fields-horizontal'>
 	<div class="field">
 		<label class="label">Title</label>
 		<div class="control has-icons-left has-icons-right">
@@ -42,7 +97,7 @@ defined('CMSPATH') or die; // prevent unauthorized access
 	<!-- <p class="help is-success">This username is available</p> -->
 	</div>
 
-	<div class="field">
+	<div class="field ">
 		<label class="label">URL Segment</label>
 		<div class="control has-icons-left has-icons-right">
 			<input name="alias" class="input iss-success" type="text" placeholder="URL Segment" value="<?php echo $page->alias;?>">
@@ -56,6 +111,7 @@ defined('CMSPATH') or die; // prevent unauthorized access
 	<p class="help">Used as the pages identifier in the URL. i.e. If the parent is 'blog' and you choose 'food' as the segment name, the URL will <strong>be https://example.com/blog/<em>food</em></strong>.
 	<br>If blank, it will be based on the title. Alphanumeric characters only, no spaces.</p> 
 	</div>
+
 
 	<div class="field">
 		<label class="label">Parent</label>
@@ -77,15 +133,37 @@ defined('CMSPATH') or die; // prevent unauthorized access
 					<?php endforeach; ?>
 				</select>
 				<span class="icon is-small is-left">
-					<i class="fas fa-object-group"></i>
+					<i class="fas fa-project-diagram"></i>
 				</span>
 			</div>
 		</div>
 	<!-- <p class="help is-success">This username is available</p> -->
 	</div>
 
+	<div class="field">
+		<label class="label">Template</label>
+		<div class="control has-icons-left has-icons-right">
+			<div class="select">
+				<select name="template">
+					<?php foreach ($all_templates as $a_template):?>
+						<option <?php if ($a_template->id = $default_template) {echo "selected";}?> value="<?php echo $a_template->id;?>" ><?php echo $a_template->title;?></option>
+					<?php endforeach; ?>
+				</select>
+				<span class="icon is-small is-left">
+					<i class="fas fa-object-group"></i>
+				</span>
+				<!-- <span class="icon is-small is-right">
+					<i class="fas fa-check"></i>
+				</span> -->
+			</div>
+		</div>
+	</div>
+
+</div> <!-- end div fields-horizontal -->
+
 	<hr>
 
+<div id='content_type_section' class='fields-horizontal'>
 	<div class="field">
 		<label class="label">Main Content</label>
 		<div class="control has-icons-left has-icons-right">
@@ -114,9 +192,10 @@ defined('CMSPATH') or die; // prevent unauthorized access
 	<p class="help">Choose main content and presentation options. Leaving this blank is fine, but all visible content on the site will just be widgets!</p> 
 	</div>
 
-	<div id="content_type_wrap" <?php if (!$page->content_type) { echo " style='display:none;' ";}?> >
-		<h6 class='heading title is-6'>Display Options</h6>
+	<div id="content_type_wrap" class="<?php echo $page->content_type . " "; if ($page->content_type>0) {echo " active ";}?>">
+		
 		<div id="content_type_controller_views">
+			<h6 class='heading title is-6'>CHOOSE VIEW</h6>
 			<div class='control'>
 				<div class='select'>
 					<select  id='content_type_controller_view' name='content_type_controller_view'>
@@ -137,32 +216,24 @@ defined('CMSPATH') or die; // prevent unauthorized access
 		</div>
 
 		<div id="content_type_controller_view_options">
+			<h6 class='heading title is-6'>VIEW OPTIONS</h6>
+			<?php 
+				if ($page->content_type>0) {
+					$options_array = json_decode($page->view_configuration);
+					$content_loc = Content::get_content_location($page->content_type);
+					$view_loc = Content::get_view_location($page->view);
+					include_once (CMSPATH . "/controllers/" . $content_loc . "/views/" . $view_loc . "/options.php");
+				}
+			?>
 		</div>
 
 	</div>
-
+</div> <!-- end content_type_wrap -->
 	<hr>
 
-	<div class="field">
-		<label class="label">Template</label>
-		<div class="control has-icons-left has-icons-right">
-			<div class="select">
-				<select name="template">
-					<?php foreach ($all_templates as $a_template):?>
-						<option <?php if ($a_template->id = $default_template) {echo "selected";}?> value="<?php echo $a_template->id;?>" ><?php echo $a_template->title;?></option>
-					<?php endforeach; ?>
-				</select>
-				<span class="icon is-small is-left">
-					<i class="fas fa-object-group"></i>
-				</span>
-				<!-- <span class="icon is-small is-right">
-					<i class="fas fa-check"></i>
-				</span> -->
-			</div>
-		</div>
-	<!-- <p class="help is-success">This username is available</p> -->
 	
-	</div>
+
+
 	<label class="label" for="template_layout_container">Widget Assignments</label>
 	<div id="template_layout_container">
 		<?php include_once($layout_path); ?>
@@ -176,119 +247,114 @@ defined('CMSPATH') or die; // prevent unauthorized access
 
 <script>
 
-	function ajax_get(url, callback) {
-		var xmlhttp = new XMLHttpRequest();
-		xmlhttp.onreadystatechange = function() {
-			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-				console.log('responseText:' + xmlhttp.responseText);
-				try {
-					var data = JSON.parse(xmlhttp.responseText);
-				} catch(err) {
-					console.log(err.message + " in " + xmlhttp.responseText);
-					return;
-				}
-				callback(data);
-			}
-		};
-	
-		xmlhttp.open("GET", url, true);
-		xmlhttp.send();
-	}
-
-	function ajax_get_html(url, callback) {
-		var xmlhttp = new XMLHttpRequest();
-		xmlhttp.onreadystatechange = function() {
-			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-				callback(xmlhttp.responseText);
-			}
-		};
-	
-		xmlhttp.open("GET", url, true);
-		xmlhttp.send();
-	}
-
 	function validate_view_options() {
 		view_options = document.getElementById('content_type_controller_view_options');
 		return true;
 	}
 
-	
-
-/* 	function show_views(d) {
-		views_markup = '<h3>Choose View</h3><div class="select"><select required id="controller_view" name="controller_view">';
-		views_markup += "<option value=''>Please select</option>";
-		content_type_controller_views = document.getElementById('content_type_controller_views');
-		d.views.forEach(view => {
-			views_markup += '<option value="' + view.location + '">' + view.title + '</option>';
-		});
-		views_markup += "</div>";
-		content_type_controller_views.innerHTML = views_markup;
-	} */
-
-	function show_view_options(d) {
-		content_type_controller_view.innerHTML = d;
-	}
 
 	content_type = document.getElementById("content_type");
-	// check if content type selected on page load to get type id
 	window.content_type_id = content_type.value;
 	content_type_wrap = document.getElementById("content_type_wrap");
 	content_type_controller_views = document.getElementById('content_type_controller_views');
+	
 
 	// switch views based on content type
 	content_type.addEventListener('change',function(e){
 		content_type_controller_views = document.getElementById('content_type_controller_views');
 		window.content_type_id = e.target.value;
 		if (window.content_type_id == -1) {
-			content_type_wrap.style.display = 'none';
-			document.getElementById('content_type_controller_view').required=false;
-			//content_type_controller_views.style.display = 'none';
-			//content_type_controller_views.innerHTML = ''; // ensure main content form options are blank
+			//content_type_wrap.style.display = 'none';
+			content_type_wrap.classList.remove('active');
+			document.getElementById('content_type_controller_view').required=false; // prevent invisible required element from submitting form
 			// todo: make sure no views are selected
 		}
 		else {
-			//content_type_controller_views.style.display = 'block';
-			content_type_wrap.style.display = 'block';
+			//content_type_wrap.style.display = 'block';
+			content_type_wrap.classList.add('active');
 			document.getElementById('content_type_controller_view').required=true;
 			window.controller_location = e.target.querySelector('option:checked').dataset.controller_location;
-			//window.controller_location = e.target.value;
-			ajax_get('<?php echo Config::$uripath;?>/controllers/' + window.controller_location + '/views.json',function(d){
-				console.log(d);
-				//show_views(d); // deprecated - sourcing all from db now
-				// filter options according to window.content_type_id matching data content_type_id on option
-			}); 
+			
 		}
 	});
 
-	function update_view_options() {
-		// triggered by onchange event below + on page edit with content options
-		view_location = document.getElementById('content_type_controller_view').querySelector('option:checked').dataset.view_location;
-		markup = ajax_get_html('<?php echo Config::$uripath;?>/controllers/' + window.controller_location + '/views/' + view_location + '/options.php?view=render_admin',function(html){
-			content_type_controller_view_options = document.getElementById('content_type_controller_view_options');
-			content_type_controller_view_options.innerHTML = html;
-		})
+
+	// TODO - fix multiselects for localstorage
+
+	function unserialize_form(id) {
+		var form_json = window.localStorage.getItem(id);
+		if (!form_json) {
+			console.log('No saved details from change of content_type / view');
+			return false;
+		}
+		var form = document.getElementById(id);
+		if (!form) {
+			return false;
+		} 
+		form_data = JSON.parse(form_json);
+		form_data.forEach(form_item => {
+			console.log('Looking for form element with name: ', form_item.field_name);
+			matching_form_element = document.querySelector('[name="' + form_item.field_name + '"]');
+			if (matching_form_element) {
+				console.log('Inserting stored item: ', form_item);
+				matching_form_element.value = form_item.field_value;
+			}
+			else {
+				console.log('Error deserializing form. No element with name matching: ',form_item.field_name);
+			}
+		});
+		window.localStorage.removeItem(id);
+	}
+
+	function serialize_form(id) {
+		var form = document.getElementById(id);
+		if (!form) {
+			return false;
+		}
+		// Setup our serialized data
+		var serialized = [];
+		// Loop through each field in the form
+		for (var i = 0; i < form.elements.length; i++) {
+			var field = form.elements[i];
+			// Don't serialize fields without a name, submits, buttons, file and reset inputs, and disabled fields
+			if (!field.name || field.disabled || field.type === 'file' || field.type === 'reset' || field.type === 'submit' || field.type === 'button') continue;
+			// If a multi-select, get all selections
+			if (field.type === 'select-multiple') {
+				for (var n = 0; n < field.options.length; n++) {
+					if (!field.options[n].selected) continue;
+					serialized.push({"field_name":field.name,"field_value":field.options[n].value});
+				}
+			}
+			// Convert field data to a query string
+			else if ((field.type !== 'checkbox' && field.type !== 'radio') || field.checked) {
+				serialized.push({"field_name":field.name,"field_value":field.value});
+			}
+		}
+		serialized_json = JSON.stringify(serialized);
+		window.localStorage.setItem(id,serialized_json);
+	}
+
+	// TODO: check for localstorage form values and populate accordingly
+	unserialize_form('page_form');
+	
+	if (content_type_controller_view.value>0) {
+		content_type_wrap.classList.add('active');
+		document.getElementById('content_type_controller_view').required=true;
+		window.controller_location = content_type.querySelector('option:checked').dataset.controller_location;
+			
 	}
 
 	// switch view options based on view
 	content_type_controller_views.addEventListener('change',function(e){
-		/* view_location = e.target.querySelector('option:checked').dataset.view_location;
-		
-		markup = ajax_get_html('<?php echo Config::$uripath;?>/controllers/' + window.controller_location + '/views/' + view_location + '/options.php?view=render_admin',function(html){
-			content_type_controller_view_options = document.getElementById('content_type_controller_view_options');
-			content_type_controller_view_options.innerHTML = html;
-		}) */
-		//alert(e.target.value);
-		update_view_options();
+		// TODO: save to session somehow preventing loss of data on url change
+		serialize_form('page_form'); // save into local storage
+
+		// reload page with new view options
+		view_location = document.getElementById('content_type_controller_view').querySelector('option:checked').dataset.view_location;
+		window.content_view_id = e.target.value;
+		window.location.href = "<?php echo Config::$uripath . "/admin/pages/edit/" . $page->id . "/";?>" + window.content_view_id + '#content_type_controller_views';
+	
 	});
 
-	<?php
-	if ($page->view > 0) {
-		
-		// need to load page options now and now just when view select changes
-		?>
-		window.controller_location = content_type.querySelector('option:checked').dataset.controller_location;
-		update_view_options();
-		<?php
-	}
-	?>
+	
 </script>

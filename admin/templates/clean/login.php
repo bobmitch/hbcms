@@ -33,7 +33,7 @@
 				<div class='field'>
 					<label class="label" for='username'>Username</label>
 					<div class="control">
-						<input type="username" name="username" required>
+						<input autocapitalize="none" type="username" name="username" required>
 					</div>
 					<p class="help">Required</p>
 				</div>

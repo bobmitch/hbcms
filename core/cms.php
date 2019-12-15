@@ -20,7 +20,7 @@ final class CMS {
 	public $pdo;
 	private $user;
 	public $uri_segments;
-	public $markup; // rendered html for current content item/page
+	public $markup; // TODO: rendered html for current content item/page
 	public $messages ;
 	private static $instance = null;
 
@@ -35,26 +35,11 @@ final class CMS {
 	public final static function Instance(){
 		
 		if (self::$instance === null) {
-			//if (Config::$debug) echo "<h3>Making new CMS instance</h3>";
-			/* 
-			echo "<pre>";
-			print_r (debug_backtrace());
-			echo "</pre>"; 
-			echo "<hr>"; */
-			//$inst = new CMS();
 			self::$instance = new CMS();
 		}
 		return self::$instance;
 	}
 
-/* 	public function get_domain() {
-		return $this->domain;
-	}
-	public function get_uri_segments() {
-		return $this->uri_segments;
-	} */
-
-	
 
 
 	static public function getvar($val, $filter="RAW") {
@@ -71,7 +56,7 @@ final class CMS {
 		if ($filter=="RAW") {
 			return $foo;
 		}
-		elseif ($filter=="USERNAME"||$filter=="TEXT") {
+		elseif ($filter=="USERNAME"||$filter=="TEXT"||$filter=="STRING") {
 			return filter_var($foo, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
 		}
 		elseif ($filter=="EMAIL") {
@@ -79,18 +64,47 @@ final class CMS {
 		}
 		elseif ($filter=="ARRAYTOJSON") {
 			if (!is_array($foo)) {
-				CMS::Instance()->queue_message('Cannot convert non-array to json in ARRAYTOJSON','danger',Config::$uripath . '/admin/pages');
+				CMS::Instance()->queue_message('Cannot convert non-array to json in ARRAYTOJSON','danger',Config::$uripath . '/admin');
 				//echo "<h5>Variable is not array, cannot perform ARRAYTOJSON filter</h5>";
 				return false;
 			}
 			$json = json_encode($foo);
 			return $json;
 		}
+		elseif ($filter=="ARRAYOFINT") {
+			if (is_array($foo)) {
+				$ok = true;
+				foreach ($foo as $bar) {
+					if ($bar===0||is_numeric($bar)) {
+						// this one is fine
+					}
+					else {
+						$ok = false;
+					}
+				}
+				if ($ok) {
+					return $foo;
+				}
+				else {
+					return false;
+				}
+			}
+			else {
+				CMS::Instance()->queue_message('Cannot convert non-array to array in ARRAYOFINT','danger',Config::$uripath . '/admin');
+				return false;
+			}
+		}
 		elseif ($filter=="NUM"||$filter=="NUMBER"||$filter=="NUMERIC") {
-			return filter_var($foo, FILTER_SANITIZE_NUMBER_INT);
+			if ($foo===0) {
+				return 0;
+			}
+			else {
+				return filter_var($foo, FILTER_SANITIZE_NUMBER_INT);
+			}
 		}
 		else {
-			return $foo;
+			//return $foo;
+			return false;
 		}
 	}
 
@@ -98,11 +112,8 @@ final class CMS {
     {
         //remove any '-' from the string they will be used as concatonater
         $str = str_replace('-', ' ', $string);
-        $str = str_replace('_', ' ', $string);
-
-        //$lang =& JFactory::getLanguage();
-        //$str = $lang->transliterate($str);
-
+		$str = str_replace('_', ' ', $string);
+		
         // remove any duplicate whitespace, and ensure all characters are alphanumeric
         $str = preg_replace(array('/\s+/','/[^A-Za-z0-9\-]/'), array('-',''), $str);
 
@@ -232,7 +243,7 @@ final class CMS {
 				return $this->uri_segments[0];
 			}
 			else {
-				return false;
+				return "home";
 			}
 		}
 		else {
@@ -340,6 +351,10 @@ spl_autoload_register(function($class_name)
 
 	
 	//echo "<h1>autoload path: " . $path . "</h1>";
+	if (!file_exists($path)) {
+		CMS::Instance()->queue_message('Failed to autoload class: ' . $class_name, 'danger',Config::$uripath . "/admin");
+		exit(0);
+	}
     require_once $path;
 });
 

@@ -1,0 +1,25 @@
+{
+	"id":"testform",
+	"fields":[
+		{
+			"name":"test_text_field",
+			"id":"test_text_field",
+			"type":"Text",
+			"label":"Test Text Field",
+			"required":true,
+			"description":"An example description",
+			"maxlength":255,
+			"minlength":3,
+			"filter":"STRING"
+		},
+		{
+			"name": "test_text_field2",
+			"id": "test_text_field2",
+			"type": "Rich",
+			"label": "Test Text Field 2",
+			"required": true,
+			"description": "HTML Field",
+			"filter": "RAW"
+		}
+	]
+}

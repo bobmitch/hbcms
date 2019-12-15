@@ -1,46 +1,58 @@
 <?php
 defined('CMSPATH') or die; // prevent unauthorized access
 
-class Field_Rich extends Field {
+class Field_Pageselector extends Field {
 
 	public function display() {
-		?>
-		<style>.editor { border:2px dashed #aaa; padding:1rem; max-height:25rem; overflow:auto;}</style>
-		<script>
-			document.addEventListener("DOMContentLoaded", function(){
-				console.log('doc loaded');
-				document.querySelector('#editor_for_<?php echo $this->name;?>').addEventListener('blur',function(e){
-					//console.log('updating textarea for editor');
-					raw = e.target.innerHTML;
-					document.querySelector('#<?php echo $this->name;?>').innerText = raw;
-				})
-			});
-		</script>
-		<?php
-		if (!Config::$debug) {
-			echo "<style>.editor_raw {display:none;}</style>";
-		}
+		$all_pages = Page::get_all_pages_by_depth();
+		/* CMS::pprint_r ($this); */
+		echo "<style>label.checkbox {display:block; margin-bottom:1rem;} label.checkbox input {margin-right:1rem;}</style>";
 		echo "<div class='field'>";
-			echo "<label class='label'>{$this->label}</label>";
-			echo "<div class='control'>";
-				$required="";
-				if ($this->required) {$required=" required ";}
-				echo "<div class='editor' contentEditable='true' id='editor_for_{$this->name}'>{$this->default}</div>";
-				echo "<h6 class='editor_raw'>Raw Markup</h6>";
-				echo "<textarea value='' maxlength={$this->maxlength} minlength={$this->minlength} class='filter_{$this->filter} input editor_raw' {$required} type='text' id='{$this->id}' name='{$this->name}'>{$this->default}</textarea>";
-			echo "</div>";
+			foreach ($all_pages as $page) {
+				echo "<label class='checkbox'>";
+					$checked = "";
+					if (in_array($page->id, $this->default)) {
+						$checked = " checked ";
+					}
+					echo "<input {$checked} type='checkbox' name='{$this->name}[]' value='{$page->id}'>";
+					for ($n=0; $n<$page->depth; $n++) {
+						echo "&nbsp;-&nbsp;";
+					}
+					echo $page->title;
+				echo "</label>";
+			}
 			if ($this->description) {
 				echo "<p class='help'>" . $this->description . "</p>";
 			}
 		echo "</div>";
 	}
 
+	public function set_from_submit() {
+		// override default field function
+		$value = CMS::getvar($this->name, $this->filter);
+		if ($value||is_numeric($value)) {
+			$this->default = $value;
+		}
+		else {
+			$this->default = array();
+		}
+	}
+
+	public function set_value($value) {
+		if (is_array($value)) {
+			$this->default = $value;
+		}
+		else {
+			$this->default = explode(',',$value);
+		}
+	}
+
 	public function inject_designer_javascript() {
 		?>
 		<script>
-			window.Field_Rich = {};
+			window.Field_Pageselector = {};
 			// template is what gets injected when the field 'insert new' button gets clicked
-			window.Field_Rich.designer_template = `
+			window.Field_Pageselector.designer_template = `
 			<div class="field">
 				<h2 class='heading title'>Rich/HTML Field</h2>	
 

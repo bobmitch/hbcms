@@ -17,7 +17,7 @@ class Page {
 
 
 	public function __construct() {
-		$this->id = null;
+		$this->id = 0;
 		$this->state = 1;
 		$this->title = "";
 		$this->alias = "";
@@ -54,6 +54,17 @@ class Page {
 		return $result;
 	}
 
+
+	public static function get_pages_from_id_array ($id_array) {
+		if (is_array($id_array)) {
+			$in_string = implode(',',$id_array);
+			$query = "select * from pages where id in ({$in_string})";
+			return  CMS::Instance()->pdo->query($query)->fetchAll();
+		}
+		else {
+			CMS::Instance()->queue_message('Expected array in function get_pages_from_id_array', 'danger', Config::$uripath . "/admin");
+		}
+	}
 
 	public function load_from_post() {
 		$this->title = CMS::getvar('title','TEXT');
