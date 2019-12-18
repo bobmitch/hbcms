@@ -13,7 +13,11 @@ class Form {
 
 	public function load_json($path = CMSPATH . "/testform.json") {
 		$json = file_get_contents($path);
+		
 		$obj = json_decode($json);
+		if (!$obj) {
+			CMS::Instance()->queue_message('Invalid JSON found in: ' . $path,'danger',Config::$uripath.'/admin');
+		}
 		$tempfields = $obj->fields;
 		$this->id = $obj->id;
 		//CMS::pprint_r ($tempfields);
@@ -37,6 +41,9 @@ class Form {
 				return $field;
 			}
 		}
+		CMS::pprint_r ($this);
+		exit(0);
+		CMS::Instance()->queue_message("Field &ldquo;{$field_name}&rdquo; not found. Check form JSON file.",'danger',Config::$uripath."/admin");
 		return false;
 	}
 

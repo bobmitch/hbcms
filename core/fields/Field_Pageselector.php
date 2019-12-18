@@ -84,6 +84,7 @@ class Field_Pageselector extends Field {
 		$this->filter = $config->filter ?? 'RAW';
 		$this->minlength = $config->minlength ?? 0;
 		$this->missingconfig = $config->missingconfig ?? false;
+		$this->type = $config->type ?? 'error!!!';
 	}
 
 	public function validate() {

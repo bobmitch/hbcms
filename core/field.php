@@ -10,6 +10,7 @@ class Field {
 	public $valid;
 	public $default;
 	public $filter;
+	public $type;
 
 	public function display() {
 		echo "<label class='label'>Field Label</label>";
@@ -26,8 +27,14 @@ class Field {
 	}
 
 	public function is_missing() {
-		$value = CMS::getvar($this->name);
-		if (!$value && $this->required) {
+		$value = CMS::getvar($this->name, $this->filter);
+		if ($value===false && $this->required) {
+			return true;
+		}
+		if ($value===null && $this->required) {
+			return true;
+		}
+		if ($value==='' && $this->required) {
 			return true;
 		}
 		return false;

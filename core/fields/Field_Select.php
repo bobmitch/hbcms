@@ -14,18 +14,22 @@ class Field_Select extends Field {
 	public function display() {
 		$required="";
 		if ($this->required) {$required=" required ";}
-		echo "<div class='select'>";
-			echo "<select {$required} id='{$this->id}' name='{$this->name}'>";
-				if ($this->required) {
-					echo "<option value='' >{$this->label}</option>";
-				}
-				foreach ($this->select_options as $select_option) {
-					$selected = "";
-					if ($select_option->value == $this->default) { $selected="selected";}
-					echo "<option {$selected} value='{$select_option->value}'>{$select_option->text}</option>";
-				}
-			echo "</select>";
-			
+		echo "<div class='field'>";
+			echo "<label class='label'>" . $this->label . "</label>";
+			echo "<div class='control'>";
+				echo "<div class='select'>";
+					echo "<select {$required} id='{$this->id}' name='{$this->name}'>";
+						if ($this->required) {
+							echo "<option value='' >{$this->label}</option>";
+						}
+						foreach ($this->select_options as $select_option) {
+							$selected = "";
+							if ($select_option->value == $this->default) { $selected="selected";}
+							echo "<option {$selected} value='{$select_option->value}'>{$select_option->text}</option>";
+						}
+					echo "</select>";
+				echo "</div>";
+			echo "</div>";
 		echo "</div>";
 		if ($this->description) {
 			echo "<p class='help'>" . $this->description . "</p>";
@@ -70,6 +74,7 @@ class Field_Select extends Field {
 		$this->missingconfig = $config->missingconfig ?? false;
 		$this->select_options = $config->select_options ?? [];
 		$this->default = $config->default ?? '';
+		$this->type = $config->type ?? 'error!!!';
 	}
 
 	public function validate() {

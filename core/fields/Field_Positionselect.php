@@ -73,6 +73,7 @@ class Field_Positionselect extends Field {
 		$this->filter = $config->filter ?? 'NUMBER';
 		$this->missingconfig = $config->missingconfig ?? false;
 		$this->default = $config->default ?? '';
+		$this->type = $config->type ?? 'error!!!';
 	}
 
 	public function validate() {

@@ -9,7 +9,7 @@ class Field_Text extends Field {
 			echo "<div class='control'>";
 				$required="";
 				if ($this->required) {$required=" required ";}
-				echo "<input value='{$this->default}' maxlength={$this->maxlength} minlength={$this->minlength} class='filter_{$this->filter} input' {$required} type='text' id='{$this->id}' name='{$this->name}'>";
+				echo "<input type='{$this->input_type}' value='{$this->default}' maxlength={$this->maxlength} minlength={$this->minlength} class='filter_{$this->filter} input' {$required} type='text' id='{$this->id}' name='{$this->name}'>";
 			echo "</div>";
 			if ($this->description) {
 				echo "<p class='help'>" . $this->description . "</p>";
@@ -55,6 +55,8 @@ class Field_Text extends Field {
 		$this->filter = $config->filter ?? 'RAW';
 		$this->minlength = $config->minlength ?? 0;
 		$this->missingconfig = $config->missingconfig ?? false;
+		$this->type = $config->type ?? 'error!!!';
+		$this->input_type = $config->input_type ?? 'text';
 	}
 
 	public function validate() {

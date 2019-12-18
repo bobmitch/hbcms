@@ -201,7 +201,7 @@ defined('CMSPATH') or die; // prevent unauthorized access
 					<select  id='content_type_controller_view' name='content_type_controller_view'>
 						<option value=''>Choose View:</option>
 						<?php
-						$all_views = CMS::Instance()->pdo->query('select * from content_views')->fetchAll();
+						$all_views = CMS::Instance()->pdo->query('select * from content_views where content_type_id=' . $page->content_type)->fetchAll();
 						foreach ($all_views as $view) {
 							$view_selected = "";
 							if ($page->view==$view->id) {
@@ -255,6 +255,7 @@ defined('CMSPATH') or die; // prevent unauthorized access
 
 	content_type = document.getElementById("content_type");
 	window.content_type_id = content_type.value;
+	window.loaded_content_type_id = content_type.value;
 	content_type_wrap = document.getElementById("content_type_wrap");
 	content_type_controller_views = document.getElementById('content_type_controller_views');
 	
@@ -270,11 +271,16 @@ defined('CMSPATH') or die; // prevent unauthorized access
 			// todo: make sure no views are selected
 		}
 		else {
-			//content_type_wrap.style.display = 'block';
-			content_type_wrap.classList.add('active');
-			document.getElementById('content_type_controller_view').required=true;
-			window.controller_location = e.target.querySelector('option:checked').dataset.controller_location;
-			
+			// check to see if content type chosen differs from already loaded type
+			// if it doesn't match, need to reload based on new content type so views are available
+			if (window.content_type_id = window.loaded_content_type_id) {
+				content_type_wrap.classList.add('active');
+				document.getElementById('content_type_controller_view').required=true;
+				window.controller_location = e.target.querySelector('option:checked').dataset.controller_location;
+			}
+			else {
+				window.location.href = "<?php echo Config::$uripath . "/admin/pages/edit/" . $page->id . "/";?>" + window.content_type_id + '#ccccontent_type_controller_views';
+			}
 		}
 	});
 
@@ -352,7 +358,7 @@ defined('CMSPATH') or die; // prevent unauthorized access
 		// reload page with new view options
 		view_location = document.getElementById('content_type_controller_view').querySelector('option:checked').dataset.view_location;
 		window.content_view_id = e.target.value;
-		window.location.href = "<?php echo Config::$uripath . "/admin/pages/edit/" . $page->id . "/";?>" + window.content_view_id + '#content_type_controller_views';
+		window.location.href = "<?php echo Config::$uripath . "/admin/pages/edit/" . $page->id . "/";?>" + window.content_view_id + '#ccccontent_type_controller_views';
 	
 	});
 

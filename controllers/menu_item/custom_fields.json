@@ -1,0 +1,25 @@
+{
+	"title":"Menu Item",
+	"id":"menu_item",
+	"fields":[
+		{
+			"name":"description",
+			"id":"description",
+			"type":"Rich",
+			"label":"Description",
+			"required":true,
+			"minlength":3,
+			"filter":"RAW"
+		},
+		{
+			"name":"price",
+			"id":"price",
+			"type":"Text",
+			"label":"Price",
+			"required":true,
+			"minlength":3,
+			"filter":"NUMBER",
+			"input_type":"number"
+		}
+	]
+}

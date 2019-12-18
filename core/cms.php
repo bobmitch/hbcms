@@ -50,11 +50,16 @@ final class CMS {
 			$foo = $_POST[$val];
 		}
 		else {
-			//echo "<code>Var " . $val . " not found</code>";
+			/* echo "<code>Var " . $val . " not found</code>";
+			exit(0); */
 			return NULL;
 		}
 		if ($filter=="RAW") {
 			return $foo;
+		}
+		elseif ($filter=="ALIAS") {
+			$temp = filter_var($foo, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+			return CMS::stringURLSafe($temp);
 		}
 		elseif ($filter=="USERNAME"||$filter=="TEXT"||$filter=="STRING") {
 			return filter_var($foo, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);

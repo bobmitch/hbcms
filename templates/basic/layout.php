@@ -37,6 +37,9 @@ if (Config::$debug) {
 		font-size:70%;
 		opacity:0.6;
 	}
+	.tags a {
+		margin-right: 1rem;
+	}
 </style>
 
 <div id='hbcms_layout_wrap'>
